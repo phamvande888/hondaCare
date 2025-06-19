@@ -6,9 +6,12 @@ const app = express();
 dotenv.config();
 const branchRouter = require("./routes/branchRoute"); // Import branch routes
 const userRouter = require("./routes/userRoute"); // Import user routes
+const authenRouter = require("./routes/authRoutes"); // Import authentication routes
+const MONGO_URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.0occiax.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+
 // Connect MongoDB Atlas
 mongoose
-  .connect(process.env.MONGO_URI, {
+  .connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -20,7 +23,8 @@ app.use(express.urlencoded({ extended: true })); // parse application/x-www-form
 app.use("/uploads", express.static("uploads")); // Serve static files from the uploads directory
 //Routes admin
 app.use("/management-branch", branchRouter);
-app.use("/management-user", userRouter); // Import user routes
+app.use("/management-user", userRouter); // routes for user management
+app.use("/authentication", authenRouter); // routes for user authentication
 
 // Start server
 const PORT = process.env.PORT || 5000;
