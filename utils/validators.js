@@ -12,7 +12,15 @@ const isValidVietnamesePhoneNumber = (phoneNumber) => {
   return vnPhoneRegex.test(phoneNumber);
 };
 
+// check for missing fields in request body
+const checkMissingFields = (body, requiredFields) => {
+  return requiredFields.filter(
+    (field) => !body[field] || body[field].toString().trim() === ""
+  );
+};
+
 module.exports = {
   isValidEmail,
   isValidVietnamesePhoneNumber,
+  checkMissingFields,
 };
