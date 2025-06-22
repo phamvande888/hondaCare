@@ -1,1 +1,3 @@
-chưa đẩy lên code
+chưa --- sữa òng này
+
+thêm dòng này 
