@@ -18,9 +18,13 @@ router.post(
   checkrole("Administrator"), // Only allow Administrator  create a branch
   createBranch
 ); // create new branch
+
 router.get("/get-all", getAllBranches); // get all branches
+
 router.get("/get-branch/:id", getBranchById); // get branch by ID
+
 router.put("/update-branch/:id", upload.array("images", 5), updateBranch); // udpate branch
+
 router.patch("/changestatus-branch/:id", changeStatus); // change branch status to inactive
 
 module.exports = router;

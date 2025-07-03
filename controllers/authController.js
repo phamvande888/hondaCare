@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 const { checkMissingFields } = require("../utils/validators");
+
 // all user login function
 const login = async (req, res) => {
   // get phone number and password from request body
@@ -37,9 +38,13 @@ const login = async (req, res) => {
       return res.status(403).json({ message: "User is not active" });
     }
     // create a JWT token
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role, branch: user.branch_id },
+      JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
     // Return the token and user information
     res.json({
       message: "Login successful",

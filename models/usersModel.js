@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema(
     branch_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch", // Reference to the Branch model
-      required: true, // Ensures that a branch is associated with the user
+      default: null, // Ensures that a branch is associated with the user
     },
   },
   { timestamps: true }

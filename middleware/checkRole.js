@@ -4,12 +4,12 @@ const User = require("../models/usersModel"); // Import your User model
 const checkRole = (allowedRoles) => {
   return async (req, res, next) => {
     try {
-      const userId = req.userId;
+      const userId = req.user?.userId; // Extract userId from the request object
       // Check if userId is present in the request
       if (!userId) {
         return res
           .status(401)
-          .json({ message: "Unauthorized: No user ID found" });
+          .json({ message: "Unauthorized from checkrole: No user ID found" });
       }
       // Check if the user exists in the database
       const user = await User.findById(userId);

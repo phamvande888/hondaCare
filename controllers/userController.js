@@ -4,7 +4,8 @@ const {
   isValidVietnamesePhoneNumber,
 } = require("../utils/validators");
 const bcrypt = require("bcrypt");
-
+const Branch = require("../models/branchModel");
+const mongoose = require("mongoose");
 // admin or branch manager Create a new user (adminstration, branch manager)
 const createUser = async (req, res) => {
   try {
@@ -184,8 +185,147 @@ const changeAccountStatus = async (req, res) => {
   }
 };
 
+// get profile user by id
+const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.params.id; // Get user ID from request parameters
+    const user = await User.findById(userId)
+      .select(
+        "-password" // Exclude password from the response
+      )
+      .populate("branch_id", "name address phoneNumber email images"); // Populate branch details
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ user });
+  } catch (error) {
+    console.error("Error getting user profile:", error);
+    return res.status(500).json({
+      message: "Error getting user profile",
+      error: error.message || error,
+    });
+  }
+};
+
+// list customers
+const getListCustomers = async (req, res) => {
+  try {
+    const list = await User.find({ role: "Customer" })
+      .select("-password") // Exclude password from the response
+      .populate("branch_id", "name address phoneNumber email images"); // Populate branch details
+    if (!list || list.length === 0) {
+      return res.status(404).json({ message: "No customers found" });
+    }
+    return res.json({
+      message: "Get list customers successfully",
+      list_Customer: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing users",
+      error: error.message || error,
+    });
+  }
+};
+
+// list Branch Manager (for Administrator)
+const getListBranchManager = async (req, res) => {
+  try {
+    const list = await User.find({ role: "Branch Manager" })
+      .select("-password") // Exclude password from the response
+      .populate("branch_id", "name address phoneNumber email images"); // Populate branch details
+    if (!list || list.length === 0) {
+      return res.status(404).json({ message: "No Branch Manager found" });
+    }
+    return res.json({
+      message: "Get list Branch Manager successfully",
+      list_Branch_Manager: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing users",
+      error: error.message || error,
+    });
+  }
+};
+
+// list Warehouse Staff (for Administrator)
+const getListWarehouseStaff = async (req, res) => {
+  try {
+    const list = await User.find({ role: "Warehouse Staff" })
+      .select("-password") // Exclude password from the response
+      .populate("branch_id", "name address phoneNumber email images"); // Populate branch details
+    if (!list || list.length === 0) {
+      return res.status(404).json({ message: "No Warehouse Staff found" });
+    }
+    return res.json({
+      message: "Get list Warehouse Staff successfully",
+      list_Warehouse_Staff: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing users",
+      error: error.message || error,
+    });
+  }
+};
+
+const getListWarehouseStaffByBranch = async (req, res) => {
+  try {
+    const branchId = req.params.branchId;
+
+    if (!branchId || !mongoose.Types.ObjectId.isValid(branchId)) {
+      return res.status(400).json({ message: "Invalid or missing branchId" });
+    }
+
+    // find branch by ID
+    const branch = await Branch.findById(branchId).select(
+      "name address phoneNumber email images"
+    );
+
+    if (!branch) {
+      return res.status(404).json({ message: "Branch not found" });
+    }
+
+    const list = await User.find({
+      role: "Warehouse Staff",
+      branch_id: branchId,
+    })
+      .select("-password")
+      .populate("branch_id", "name address phoneNumber email images");
+
+    if (!list || list.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No Warehouse Staff found in this branch" });
+    }
+
+    return res.json({
+      message: `List of Warehouse Staff in branch: ${branch.name}`,
+      branch, // 👈 Thông tin chi nhánh
+      list_Warehouse_Staff: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing Warehouse Staff",
+      error: error.message || error,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   updateProfile,
   changeAccountStatus,
+  getUserProfile,
+  getListCustomers,
+  getListBranchManager,
+  getListWarehouseStaff,
+  getListWarehouseStaffByBranch,
 };
