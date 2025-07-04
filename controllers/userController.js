@@ -6,8 +6,21 @@ const {
 const bcrypt = require("bcrypt");
 const Branch = require("../models/branchModel");
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
+
 // admin or branch manager Create a new user (adminstration, branch manager)
 const createUser = async (req, res) => {
+  const uploadedFiles = req.files || [];
+
+  const removeUploadedFiles = () => {
+    uploadedFiles.forEach((file) => {
+      const filePath = path.join(__dirname, "../uploads", file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    });
+  };
   try {
     // data user
     const fullName = req.body.fullName?.trim(); // Full name is required
@@ -26,6 +39,7 @@ const createUser = async (req, res) => {
       (field) => !req.body[field] || req.body[field].toString().trim() === ""
     );
     if (missingFields.length > 0) {
+      removeUploadedFiles();
       return res.status(400).json({
         error: `Missing required fields: ${missingFields.join(", ")}`,
       });
@@ -33,10 +47,12 @@ const createUser = async (req, res) => {
 
     // Validate email format
     if (email && !isValidEmail(email)) {
+      removeUploadedFiles();
       return res.status(400).json({ error: "Invalid email format" });
     }
     // Validate VietNam phone number
     if (!isValidVietnamesePhoneNumber(phoneNumber)) {
+      removeUploadedFiles();
       return res.status(400).json({
         error:
           "Invalid phone number format. Must be a valid Vietnamese phone number.",
@@ -47,6 +63,7 @@ const createUser = async (req, res) => {
       $or: [{ phoneNumber }],
     });
     if (existingUser) {
+      removeUploadedFiles();
       return res.status(409).json({
         error: `User with this phone already exists.`,
       });
@@ -72,6 +89,7 @@ const createUser = async (req, res) => {
       .status(201)
       .json({ message: "User created successfully", new_user: user });
   } catch (error) {
+    removeUploadedFiles();
     console.error("User creation error:", error);
     res
       .status(400)
@@ -264,6 +282,7 @@ const getListWarehouseStaff = async (req, res) => {
     }
     return res.json({
       message: "Get list Warehouse Staff successfully",
+      total: list.length,
       list_Warehouse_Staff: list,
     });
   } catch (error) {
@@ -307,13 +326,72 @@ const getListWarehouseStaffByBranch = async (req, res) => {
 
     return res.json({
       message: `List of Warehouse Staff in branch: ${branch.name}`,
-      branch, // 👈 Thông tin chi nhánh
+      branch, // branch details
+      total: list.length, // total number of Warehouse Staff
       list_Warehouse_Staff: list,
     });
   } catch (error) {
     console.error("Error listing users:", error);
     return res.status(500).json({
       message: "Error listing Warehouse Staff",
+      error: error.message || error,
+    });
+  }
+};
+
+const getListTechnician = async (req, res) => {
+  try {
+    const list = await User.find({ role: "Technician" })
+      .select("-password") // Exclude password from the response
+      .populate("branch_id", "name address phoneNumber email images"); // Populate branch details
+    if (!list || list.length === 0) {
+      return res.status(404).json({ message: "No Technician found" });
+    }
+    return res.json({
+      message: "Get list Technician successfully",
+      total: list.length,
+      list_Technician: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing users",
+      error: error.message || error,
+    });
+  }
+};
+
+const getListTechnicianByBranch = async (req, res) => {
+  try {
+    const branchId = req.params.branchId;
+
+    if (!branchId || !mongoose.Types.ObjectId.isValid(branchId)) {
+      return res.status(400).json({ message: "Invalid or missing branchId" });
+    }
+
+    // find branch by ID
+    const branch = await Branch.findById(branchId).select(
+      "name address phoneNumber email images"
+    );
+
+    if (!branch) {
+      return res.status(404).json({ message: "Branch not found" });
+    }
+    const list = await User.find({ role: "Technician", branch_id: branchId })
+      .select("-password") // Exclude password from the response
+      .populate("branch_id", "name address phoneNumber email images"); // Populate branch details
+    if (!list || list.length === 0) {
+      return res.status(404).json({ message: "No Technician found" });
+    }
+    return res.json({
+      message: `Get list Technician successfully from ${branch.name}`,
+      total: list.length,
+      list_Technician: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing users",
       error: error.message || error,
     });
   }
@@ -328,4 +406,6 @@ module.exports = {
   getListBranchManager,
   getListWarehouseStaff,
   getListWarehouseStaffByBranch,
+  getListTechnician,
+  getListTechnicianByBranch,
 };

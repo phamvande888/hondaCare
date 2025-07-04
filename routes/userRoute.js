@@ -10,6 +10,8 @@ const {
   getListBranchManager,
   getListWarehouseStaff,
   getListWarehouseStaffByBranch,
+  getListTechnician,
+  getListTechnicianByBranch,
 } = require("../controllers/userController");
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
@@ -65,5 +67,19 @@ router.get(
   checkrole(["Administrator", "Branch Manager"]),
   getListWarehouseStaffByBranch
 ); // Administrator - Branch Manager : get List all warehouse staff by branch
+
+router.get(
+  "/list-technician",
+  verifyToken,
+  checkrole(["Administrator"]),
+  getListTechnician
+); // Administrator List all technicians
+
+router.get(
+  "/list-technician/by-branch/:branchId",
+  verifyToken,
+  checkrole(["Administrator", "Branch Manager"]),
+  getListTechnicianByBranch
+); // Administrator - Branch Manager : get List all technicians by branch
 
 module.exports = router;
