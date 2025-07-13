@@ -397,6 +397,68 @@ const getListTechnicianByBranch = async (req, res) => {
   }
 };
 
+// if have branchId, get list user by role in branch ***
+const getListUserByRole = async (req, res, roleName, byBranch = false) => {
+  try {
+    const branchId = req.params.branchId;
+
+    let query = { role: roleName };
+    if (byBranch) {
+      if (!branchId || !mongoose.Types.ObjectId.isValid(branchId)) {
+        return res.status(400).json({ message: "Invalid or missing branchId" });
+      }
+
+      const branch = await Branch.findById(branchId).select(
+        "name address phoneNumber email images"
+      );
+      if (!branch) {
+        return res.status(404).json({ message: "Branch not found" });
+      }
+      query.branch_id = branchId;
+    }
+
+    const list = await User.find(query)
+      .select("-password")
+      .populate("branch_id", "name address phoneNumber email images");
+
+    if (!list || list.length === 0) {
+      return res.status(404).json({ message: `No ${roleName} found` });
+    }
+
+    return res.json({
+      message: `Get list ${roleName} successfully${
+        byBranch ? ` from branch ` : ""
+      }`,
+      total: list.length,
+      list_User: list,
+    });
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return res.status(500).json({
+      message: "Error listing users",
+      error: error.message || error,
+    });
+  }
+};
+
+// use  getListUserByRole to get list users by role
+const getListServiceReceptionist = (req, res) =>
+  getListUserByRole(req, res, "Service Receptionist");
+
+const getListServiceReceptionistByBranch = (req, res) =>
+  getListUserByRole(req, res, "Service Receptionist", true);
+
+const getListServiceAdvisor = (req, res) =>
+  getListUserByRole(req, res, "Service Advisor");
+
+const getListServiceAdvisorByBranch = (req, res) =>
+  getListUserByRole(req, res, "Service Advisor", true);
+
+const getListCustomer = (req, res) => getListUserByRole(req, res, "Customer");
+
+const getListCustomerByBranch = (req, res) =>
+  getListUserByRole(req, res, "Customer", true);
+
 module.exports = {
   createUser,
   updateProfile,
@@ -408,4 +470,11 @@ module.exports = {
   getListWarehouseStaffByBranch,
   getListTechnician,
   getListTechnicianByBranch,
+  getListUserByRole,
+  getListServiceReceptionist,
+  getListServiceReceptionistByBranch,
+  getListServiceAdvisor,
+  getListServiceAdvisorByBranch,
+  getListCustomer,
+  getListCustomerByBranch,
 };

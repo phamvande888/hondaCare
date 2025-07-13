@@ -12,6 +12,13 @@ const {
   getListWarehouseStaffByBranch,
   getListTechnician,
   getListTechnicianByBranch,
+  getListUserByRole,
+  getListServiceReceptionist,
+  getListServiceReceptionistByBranch,
+  getListServiceAdvisor,
+  getListServiceAdvisorByBranch,
+  getListCustomer,
+  getListCustomerByBranch,
 } = require("../controllers/userController");
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
@@ -81,5 +88,53 @@ router.get(
   checkrole(["Administrator", "Branch Manager"]),
   getListTechnicianByBranch
 ); // Administrator - Branch Manager : get List all technicians by branch
+
+// List all Service Receptionists (Admin only)
+router.get(
+  "/list-service-receptionist",
+  verifyToken,
+  checkrole(["Administrator"]),
+  getListServiceReceptionist
+);
+
+// List all Service Advisors (Admin only)
+router.get(
+  "/list-service-advisor",
+  verifyToken,
+  checkrole(["Administrator"]),
+  getListServiceAdvisor
+);
+
+// List all Customers (Admin only)
+router.get(
+  "/list-customer",
+  verifyToken,
+  checkrole(["Administrator"]),
+  getListCustomer
+);
+
+// List Service Receptionists by Branch
+router.get(
+  "/list-service-receptionist/by-branch/:branchId",
+  verifyToken,
+  checkrole(["Administrator", "Branch Manager"]),
+  getListServiceReceptionistByBranch
+);
+
+// List Service Advisors by Branch
+router.get(
+  "/list-service-advisor/by-branch/:branchId",
+  verifyToken,
+  checkrole(["Administrator", "Branch Manager"]),
+  getListServiceAdvisorByBranch
+);
+
+// List Customers by Branch
+router.get(
+  "/list-customer/by-branch/:branchId",
+  verifyToken,
+  checkrole(["Administrator", "Branch Manager"]),
+  getListCustomerByBranch
+);
 
 module.exports = router;

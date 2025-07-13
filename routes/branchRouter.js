@@ -11,20 +11,36 @@ const router = express.Router();
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
 
+// create new branch
 router.post(
   "/create-branch",
   upload.array("images", 5),
   verifyToken,
   checkrole("Administrator"), // Only allow Administrator  create a branch
   createBranch
-); // create new branch
+);
 
-router.get("/get-all", getAllBranches); // get all branches
+// get all branches
+router.get("/get-all", getAllBranches);
 
-router.get("/get-branch/:id", getBranchById); // get branch by ID
+// get branch by ID
+router.get("/get-branch/:id", verifyToken, getBranchById);
 
-router.put("/update-branch/:id", upload.array("images", 5), updateBranch); // udpate branch
+// udpate branch
+router.put(
+  "/update-branch/:id",
+  verifyToken,
+  checkrole("Administrator", "Branch Manager"),
+  upload.array("images", 5),
+  updateBranch
+);
 
-router.patch("/changestatus-branch/:id", changeStatus); // change branch status to inactive
+// change branch status to inactive
+router.patch(
+  "/changestatus-branch/:id",
+  verifyToken,
+  checkrole("Administrator", "Branch Manager"),
+  changeStatus
+);
 
 module.exports = router;
