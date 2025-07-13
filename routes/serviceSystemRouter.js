@@ -6,6 +6,7 @@ const checkrole = require("../middleware/checkRole"); // Import role checking mi
 const {
   createServiceSystem,
   updateServiceSystem,
+  updateStatus,
 } = require("../controllers/serviceSystemController");
 
 //  Administrator - Branch Manager : create service
@@ -24,6 +25,14 @@ router.put(
   checkrole("Administrator", "Branch Manager"),
   upload.array("images", 5),
   updateServiceSystem
+);
+
+// Administrator - Branch Manager: update status
+router.patch(
+  "/:serviceSystemId/branches/:branchId/status",
+  verifyToken,
+  checkrole("Administrator", "Branch Manager"),
+  updateStatus
 );
 
 module.exports = router;

@@ -212,4 +212,43 @@ const updateServiceSystem = async (req, res) => {
   }
 };
 
-module.exports = { createServiceSystem, updateServiceSystem };
+// is active of branch
+const updateStatus = async (req, res) => {
+  const { serviceSystemId, branchId } = req.params;
+
+  try {
+    const service = await ServiceSystem.findOne({
+      _id: serviceSystemId,
+      "branches.branch": branchId,
+    });
+
+    if (!service) {
+      return res.status(404).json({ message: "Service or branch not found" });
+    }
+
+    const branchIndex = service.branches.findIndex(
+      (b) => b.branch.toString() === branchId
+    );
+
+    if (branchIndex === -1) {
+      return res.status(404).json({ message: "Branch not found in service" });
+    }
+
+    service.branches[branchIndex].isActive =
+      !service.branches[branchIndex].isActive;
+
+    await service.save();
+
+    await service.populate("branches.branch");
+
+    return res.status(200).json({
+      message: "Service status toggled successfully",
+      data: service,
+    });
+  } catch (error) {
+    console.error("Update failed:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = { createServiceSystem, updateServiceSystem, updateStatus };
