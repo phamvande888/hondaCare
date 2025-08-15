@@ -251,4 +251,102 @@ const updateStatus = async (req, res) => {
   }
 };
 
-module.exports = { createServiceSystem, updateServiceSystem, updateStatus };
+// view detail
+const getServiceSystemDetail = async (req, res) => {
+  const { serviceSystemId } = req.params;
+
+  try {
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(serviceSystemId)) {
+      return res.status(400).json({ message: "Invalid service ID" });
+    }
+
+    const service = await ServiceSystem.findById(serviceSystemId)
+      .populate("branches.branch", "name address phoneNumber images") // Only include essential branch fields
+      .lean(); // convert to plain JS object
+
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    return res.status(200).json({ service });
+  } catch (err) {
+    console.error("Error fetching service detail:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal server error" });
+  }
+};
+
+// list all service systems
+const getAllServiceSystems = async (req, res) => {
+  try {
+    const services = await ServiceSystem.find()
+      .populate("branches.branch", "name address phoneNumber images")
+      .sort({ createdAt: -1 }); // Sort by creation date, most recent first
+
+    if (!services || services.length === 0) {
+      return res.status(404).json({ message: "No service systems found" });
+    }
+
+    return res
+      .status(200)
+      .json({ total: services.length, list_services: services });
+  } catch (err) {
+    console.error("Error fetching all services:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal server error" });
+  }
+};
+
+// GET /service-systems/branch/:branchId
+const getServiceSystemsByBranch = async (req, res) => {
+  const { branchId } = req.params;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(branchId)) {
+      return res.status(400).json({ message: "Invalid branch ID" });
+    }
+
+    const services = await ServiceSystem.find({
+      "branches.branch": branchId,
+    })
+      .populate("branches.branch", "name address phoneNumber images")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const filteredServices = services.map((service) => {
+      return {
+        ...service,
+        branches: service.branches.filter(
+          (b) => b.branch && b.branch._id.toString() === branchId
+        ),
+      };
+    });
+
+    if (filteredServices.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No services found for this branch" });
+    }
+
+    return res.status(200).json({
+      total: filteredServices.length,
+      list_services: filteredServices,
+    });
+  } catch (err) {
+    console.error("Error fetching services by branch:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Internal server error" });
+  }
+};
+
+module.exports = {
+  createServiceSystem,
+  updateServiceSystem,
+  updateStatus,
+  getServiceSystemDetail,
+  getAllServiceSystems,
+  getServiceSystemsByBranch,
+};

@@ -7,6 +7,9 @@ const {
   createServiceSystem,
   updateServiceSystem,
   updateStatus,
+  getServiceSystemDetail,
+  getAllServiceSystems,
+  getServiceSystemsByBranch,
 } = require("../controllers/serviceSystemController");
 
 //  Administrator - Branch Manager : create service
@@ -34,5 +37,14 @@ router.patch(
   checkrole("Administrator", "Branch Manager"),
   updateStatus
 );
+
+// list all services
+router.get("/list-services", verifyToken, getAllServiceSystems);
+
+// all actors : detail service
+router.get("/:serviceSystemId", verifyToken, getServiceSystemDetail);
+
+// get services by branch
+router.get("/service-systems/branch/:branchId", getServiceSystemsByBranch);
 
 module.exports = router;

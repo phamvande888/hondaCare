@@ -55,4 +55,4 @@ const ServiceSystemSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Service_System", ServiceSystemSchema);
+module.exports = mongoose.model("ServiceSystem", ServiceSystemSchema);
