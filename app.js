@@ -23,13 +23,14 @@ mongoose
 app.use(express.json()); // parse application/json
 app.use(express.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
 app.use("/uploads", express.static("uploads")); // Serve static files from the uploads directory
+
 //Routes API
 app.use("/api/branches", branchRoutes);
 app.use("/api/users", userRoutes); // routes for user management
 app.use("/api/authentication", authenRoutes); // routes for user authentication
 app.use("/api/services", serviceRoutes); // routes for user authentication
 app.use("/api/vehicle-systems", vehicleSystemRoutes); // routes for vehicle management
-app.use("/api/dodels", modelRoutes); // routes for vehicle management
+app.use("/api/models", modelRoutes); // routes for vehicle management
 
 // Start server
 const PORT = process.env.PORT || 5000;

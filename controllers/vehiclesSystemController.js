@@ -4,11 +4,13 @@ const path = require("path");
 const VehiclesSystem = require("../models/vehiclesSystemModel");
 const { deleteFiles } = require("../utils/fileHelper");
 const { checkMissingFields } = require("../utils/validators");
-
+const Model = require("../models/vehicleModel");
 // create VehiclesSystem
 const createVehiclesSystem = async (req, res) => {
-  const uploadedFiles = req.files || [];
-
+  const uploadedFiles = [
+    ...(req.files?.avatar || []),
+    ...(req.files?.images || []),
+  ];
   try {
     // get vehicle data from request body
     const name = req.body.name?.trim();
@@ -52,6 +54,15 @@ const createVehiclesSystem = async (req, res) => {
       });
     }
 
+    // check model tồn tại
+    const existingModel = await Model.findOne({ name: model });
+    if (!existingModel) {
+      deleteFiles(uploadedFiles);
+      return res.status(404).json({
+        error: `Model ${model} not found.`,
+      });
+    }
+
     // Tạo document mới
     const vehicle = new VehiclesSystem({
       name,
@@ -71,7 +82,6 @@ const createVehiclesSystem = async (req, res) => {
     });
   } catch (error) {
     deleteFiles(uploadedFiles);
-
     console.error("Vehicle creation error:", error);
     res.status(400).json({
       message: "Error creating vehicle",

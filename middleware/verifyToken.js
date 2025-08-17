@@ -2,16 +2,31 @@
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
-// Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
-  const token = req.headers["authorization"];
-  if (!token) return res.status(401).json({ message: "No token provided" });
+  const authHeader = req.headers["authorization"] || req.headers.Authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
+    return res.status(401).json({ message: "Invalid token format" });
+  }
+
+  const token = parts[1];
+
   try {
-    const decoded = jwt.verify(token.replace("Bearer ", ""), JWT_SECRET);
-    req.user = { userId: decoded.userId };
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // giữ nguyên toàn bộ payload
     next();
   } catch (err) {
-    res.status(403).json({ message: err.message || "Invalid token" });
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
+    if (err.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    return res.status(403).json({ message: "Unauthorized" });
   }
 };
 

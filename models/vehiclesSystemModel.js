@@ -12,7 +12,6 @@ const VehiclesSystemSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Model", // Reference to Model collection
       required: true,
-      trim: true,
     },
     description: {
       type: String,
