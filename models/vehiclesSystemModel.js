@@ -27,12 +27,12 @@ const VehiclesSystemSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: null,
+      required: true,
       trim: true,
     },
     images: {
-      type: [String], // array link images
-      default: [],
+      type: [{ type: String, required: true }], // array link images
+      required: true,
     },
     isActive: {
       type: Boolean,

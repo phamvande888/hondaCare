@@ -5,12 +5,14 @@ const VehiclesSystem = require("../models/vehiclesSystemModel");
 const { deleteFiles } = require("../utils/fileHelper");
 const { checkMissingFields } = require("../utils/validators");
 const Model = require("../models/vehicleModel");
+
 // create VehiclesSystem
 const createVehiclesSystem = async (req, res) => {
   const uploadedFiles = [
-    ...(req.files?.avatar || []),
-    ...(req.files?.images || []),
+    ...(req.files?.avatar?.map((f) => f.filename) || []),
+    ...(req.files?.images?.map((f) => f.filename) || []),
   ];
+
   try {
     // get vehicle data from request body
     const name = req.body.name?.trim();
@@ -18,7 +20,7 @@ const createVehiclesSystem = async (req, res) => {
     const description = req.body.description?.trim() || null;
     const year = req.body.year ? parseInt(req.body.year) : null;
     const price = req.body.price ? parseFloat(req.body.price) : null;
-    const avatar = req.files?.avatar ? req.files.avatar[0].filename : null; // nếu upload 1 ảnh đại diện
+    const avatar = req.files?.avatar ? req.files.avatar[0].filename : null;
     const images = req.files?.images
       ? req.files.images.map((file) => file.filename)
       : [];
@@ -45,7 +47,7 @@ const createVehiclesSystem = async (req, res) => {
       return res.status(400).json({ error: "Price must be a positive number" });
     }
 
-    // Kiểm tra trùng name + model (vd: Civic 1.5 Turbo đã có rồi)
+    // exist name + model (ex: Civic 1.5 Turbo existing)
     const existingVehicle = await VehiclesSystem.findOne({ name, model });
     if (existingVehicle) {
       deleteFiles(uploadedFiles);
@@ -54,16 +56,23 @@ const createVehiclesSystem = async (req, res) => {
       });
     }
 
-    // check model tồn tại
-    const existingModel = await Model.findOne({ name: model });
+    // check model existing
+    const existingModel = await Model.findById(model);
     if (!existingModel) {
       deleteFiles(uploadedFiles);
       return res.status(404).json({
         error: `Model ${model} not found.`,
       });
     }
+    // Validate images (at least 1 image)
+    if (!images || images.length === 0) {
+      deleteFiles(uploadedFiles);
+      return res.status(400).json({
+        error: "At least one image is required",
+      });
+    }
 
-    // Tạo document mới
+    // create data
     const vehicle = new VehiclesSystem({
       name,
       model,
