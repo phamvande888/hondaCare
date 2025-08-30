@@ -11,6 +11,8 @@ const MONGO_URI = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@c
 const serviceRoutes = require("./routes/serviceSystemRoutes");
 const vehicleSystemRoutes = require("./routes/vehiclesSystemRoutes");
 const modelRoutes = require("./routes/modelRoutes"); // Import model routes
+const vehicleCustomersRoutes = require("./routes/vehiclesCustomerRoutes"); // Import model routes
+
 // Connect MongoDB Atlas
 mongoose
   .connect(MONGO_URI, {
@@ -31,6 +33,7 @@ app.use("/api/authentication", authenRoutes); // routes for user authentication
 app.use("/api/services", serviceRoutes); // routes for user authentication
 app.use("/api/vehicle-systems", vehicleSystemRoutes); // routes for vehicle management
 app.use("/api/models", modelRoutes); // routes for vehicle management
+app.use("/api/vehicle-customers", vehicleCustomersRoutes); // routes for vehicle of customer management
 
 // Start server
 const PORT = process.env.PORT || 5000;

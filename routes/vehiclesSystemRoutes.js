@@ -4,6 +4,10 @@ const router = express.Router();
 const {
   createVehiclesSystem,
   updateVehiclesSystem,
+  updateIsActive,
+  getAll,
+  getById,
+  getByModel,
 } = require("../controllers/vehiclesSystemController");
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
@@ -20,7 +24,7 @@ router.post(
   createVehiclesSystem
 );
 
-// Update vehicle system
+// Update information vehicle system
 router.put(
   "/:id",
   verifyToken,
@@ -31,4 +35,22 @@ router.put(
   ]),
   updateVehiclesSystem
 );
+
+// Update vehicle system status (IsActive: boolean)
+router.patch(
+  "/:id/status",
+  verifyToken,
+  checkrole("Administrator", "Branch Manager"),
+  updateIsActive
+);
+
+// List vehicle systems
+router.get("/", getAll);
+
+// Get vehicle system by ID (detail)
+router.get("/:id", getById);
+
+// Get by model
+router.get("/model/:modelId", getByModel);
+
 module.exports = router;

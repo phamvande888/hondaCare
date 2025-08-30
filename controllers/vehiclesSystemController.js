@@ -141,7 +141,7 @@ const updateVehiclesSystem = async (req, res) => {
       }
     }
 
-    // If avatar uploaded, replace old one
+    // If avatar uploaded, replace old one *********** good
     let newAvatar = vehicle.avatar;
     if (req.files?.avatar) {
       if (vehicle.avatar) {
@@ -182,4 +182,90 @@ const updateVehiclesSystem = async (req, res) => {
   }
 };
 
-module.exports = { createVehiclesSystem, updateVehiclesSystem };
+// Update vehicle system status only
+const updateIsActive = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+
+    const vehicleSystem = await VehiclesSystem.findById(id);
+    if (!vehicleSystem) {
+      return res.status(404).json({ message: "Vehicle system not found" });
+    }
+
+    vehicleSystem.isActive = status;
+    await vehicleSystem.save();
+
+    res.status(200).json({
+      message: `Vehicle system status with ID ${id} is updated successfully`,
+      data: vehicleSystem,
+    });
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// List
+const getAll = async (req, res) => {
+  try {
+    const vehicles = await VehiclesSystem.find().populate("model");
+    res.status(200).json({
+      message: "GET list vehicle systems successful",
+      total: vehicles.length,
+      listData: vehicles,
+    });
+  } catch (error) {
+    console.error("Error retrieving vehicle systems:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// detail
+const getById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const vehicle = await VehiclesSystem.findById(id).populate("model");
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle system not found" });
+    }
+    res.status(200).json({
+      message: `GET detail vehicle system ID ${id} successful`,
+      listData: vehicle,
+    });
+  } catch (error) {
+    console.error("Error retrieving vehicle systems:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// getByModel
+const getByModel = async (req, res) => {
+  const { modelId } = req.params;
+  try {
+    const vehicles = await VehiclesSystem.find({ model: modelId }).populate(
+      "model"
+    );
+    res.status(200).json({
+      message: "GET vehicle systems by model successful",
+      total: vehicles.length,
+      listData: vehicles,
+    });
+  } catch (error) {
+    console.error("Error retrieving vehicle systems by model:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  createVehiclesSystem,
+  updateVehiclesSystem,
+  updateIsActive,
+  getAll,
+  getById,
+  getByModel,
+};

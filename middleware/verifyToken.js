@@ -17,7 +17,7 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // giữ nguyên toàn bộ payload
+    req.user = decoded; // Attach decoded token to request object
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
