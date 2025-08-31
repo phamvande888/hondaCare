@@ -15,8 +15,6 @@ const createVehiclesCustomer = async (req, res) => {
       "VehiclesSystemId",
       "customerId",
       "color",
-      //   "mileage",
-      //   "lastMaintenanceDate",
     ];
     const missingFields = checkMissingFields(req.body, requiredFields);
 
@@ -31,7 +29,7 @@ const createVehiclesCustomer = async (req, res) => {
       licensePlate: licensePlate.trim(),
     });
     if (existingVehicle) {
-      return res.status(400).json({ message: "License plate must be unique" });
+      return res.status(400).json({ message: "License plate is existing" });
     }
     // valid VehiclesSystemId
     const validVehiclesSystemId = await VehiclesSystem.findById(
@@ -65,7 +63,7 @@ const createVehiclesCustomer = async (req, res) => {
     await newVehicle.save();
 
     res.status(201).json({
-      message: "Vehicle created successfully",
+      message: "Vehicle of customer  created successfully",
       data: newVehicle,
     });
   } catch (error) {
@@ -74,4 +72,49 @@ const createVehiclesCustomer = async (req, res) => {
   }
 };
 
-module.exports = { createVehiclesCustomer };
+// get list vehicles all customer for management
+const getVehiclesAllCustomersList = async (req, res) => {
+  try {
+    const vehicles = await VehiclesCustomer.find()
+      .populate({ path: "VehiclesSystemId", populate: { path: "model" } })
+      .populate({ path: "customerId", select: "-password" });
+    res.status(200).json({
+      message: "List of vehicles of customers",
+      total: vehicles.length,
+      data: vehicles,
+    });
+  } catch (error) {
+    console.error("Error fetching vehicles:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// get detail vehicles customer
+const getVehiclesCustomerDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const vehicle = await VehiclesCustomer.find({ customerId: id })
+      .populate({ path: "VehiclesSystemId", populate: { path: "model" } })
+      .populate({ path: "customerId", select: "-password" });
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    res.status(200).json({
+      message: `List of vehicles for customer ${id} `,
+      total: vehicle.length,
+      data: vehicle,
+    });
+  } catch (error) {
+    console.error("Error fetching vehicle details:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// get by ID of customer
+
+module.exports = {
+  createVehiclesCustomer,
+  getVehiclesAllCustomersList,
+  getVehiclesCustomerDetail,
+  getVehiclesCustomerDetail,
+};
