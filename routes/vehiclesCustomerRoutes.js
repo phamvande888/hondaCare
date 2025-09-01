@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   createVehiclesCustomer,
   getVehiclesAllCustomersList,
-  getVehiclesCustomerDetail,
+  getListVehiclesCustomer,
+  getDetail,
 } = require("../controllers/vehiclesCustomerController");
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
@@ -18,19 +19,12 @@ router.post(
 );
 
 // get list vehicles all customer for management
-router.get(
-  "/customers",
-  verifyToken,
-  checkrole("Administrator", "Branch Manager"),
-  getVehiclesAllCustomersList
-);
+router.get("/customers", verifyToken, getVehiclesAllCustomersList);
 
-// get detail vehicles customer
-router.get(
-  "/:id/customer",
-  verifyToken,
-  checkrole("Administrator", "Branch Manager"),
-  getVehiclesCustomerDetail
-);
+// get list  vehicles customer
+router.get("/:id/customer", verifyToken, getListVehiclesCustomer);
+
+// get detail
+router.get("/:id", verifyToken, getDetail);
 
 module.exports = router;

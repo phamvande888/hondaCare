@@ -90,7 +90,7 @@ const getVehiclesAllCustomersList = async (req, res) => {
 };
 
 // get detail vehicles customer
-const getVehiclesCustomerDetail = async (req, res) => {
+const getListVehiclesCustomer = async (req, res) => {
   try {
     const { id } = req.params;
     const vehicle = await VehiclesCustomer.find({ customerId: id })
@@ -110,11 +110,73 @@ const getVehiclesCustomerDetail = async (req, res) => {
   }
 };
 
-// get by ID of customer
+// get detail vehicle customer
+const getDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const vehicle = await VehiclesCustomer.findById(id)
+      .populate({ path: "VehiclesSystemId", populate: { path: "model" } })
+      .populate({ path: "customerId", select: "-password" });
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    res.status(200).json({
+      message: `Detail of vehicle ${id}`,
+      data: vehicle,
+    });
+  } catch (error) {
+    console.error("Error fetching vehicle details:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// update vehicles customer
+const updateVehiclesCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { licensePlate, VehiclesSystemId, color, mileage, customerId } =
+      req.body;
+
+    // Validate input
+    if (
+      !licensePlate ||
+      !VehiclesSystemId ||
+      !color ||
+      !mileage ||
+      !customerId
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if vehicle exists
+    const vehicle = await VehiclesCustomer.findById(id);
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+
+    // Update vehicle details
+    vehicle.licensePlate = licensePlate.trim();
+    vehicle.VehiclesSystemId = VehiclesSystemId;
+    vehicle.color = color;
+    vehicle.mileage = mileage ? parseInt(mileage) : 0;
+    vehicle.customerId = customerId;
+
+    await vehicle.save();
+
+    res.status(200).json({
+      message: "Vehicle updated successfully",
+      data: vehicle,
+    });
+  } catch (error) {
+    console.error("Error updating vehicle:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   createVehiclesCustomer,
   getVehiclesAllCustomersList,
-  getVehiclesCustomerDetail,
-  getVehiclesCustomerDetail,
+  getListVehiclesCustomer,
+  getListVehiclesCustomer,
+  getDetail,
 };
