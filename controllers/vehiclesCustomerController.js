@@ -137,15 +137,19 @@ const updateVehiclesCustomer = async (req, res) => {
     const { licensePlate, VehiclesSystemId, color, mileage, customerId } =
       req.body;
 
-    // Validate input
-    if (
-      !licensePlate ||
-      !VehiclesSystemId ||
-      !color ||
-      !mileage ||
-      !customerId
-    ) {
-      return res.status(400).json({ message: "All fields are required" });
+    // check field
+    const requiredFields = [
+      "licensePlate",
+      "VehiclesSystemId",
+      "customerId",
+      "color",
+    ];
+    const missingFields = checkMissingFields(req.body, requiredFields);
+
+    if (missingFields.length > 0) {
+      return res
+        .status(400)
+        .json({ message: `Missing fields: ${missingFields.join(", ")}` });
     }
 
     // Check if vehicle exists
@@ -154,7 +158,37 @@ const updateVehiclesCustomer = async (req, res) => {
       return res.status(404).json({ message: "Vehicle not found" });
     }
 
-    // Update vehicle details
+    // check licensePlate unique (trừ chính nó)
+    const existingVehicle = await VehiclesCustomer.findOne({
+      licensePlate: licensePlate.trim(),
+      _id: { $ne: id },
+    });
+    if (existingVehicle) {
+      return res.status(400).json({ message: "License plate is existing" });
+    }
+
+    // valid VehiclesSystemId
+    const validVehiclesSystemId = await VehiclesSystem.findById(
+      VehiclesSystemId
+    );
+    if (!validVehiclesSystemId) {
+      return res.status(400).json({ message: "VehiclesSystemId not found" });
+    }
+
+    // valid customerId
+    const validCustomerId = await User.findById(customerId);
+    if (!validCustomerId) {
+      return res.status(400).json({ message: "Invalid customerId" });
+    }
+
+    // valid mileage
+    if (mileage < 0) {
+      return res
+        .status(400)
+        .json({ message: "Invalid mileage, must be a positive number" });
+    }
+
+    // update
     vehicle.licensePlate = licensePlate.trim();
     vehicle.VehiclesSystemId = VehiclesSystemId;
     vehicle.color = color;
@@ -179,4 +213,5 @@ module.exports = {
   getListVehiclesCustomer,
   getListVehiclesCustomer,
   getDetail,
+  updateVehiclesCustomer,
 };

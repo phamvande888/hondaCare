@@ -6,6 +6,7 @@ const {
   getVehiclesAllCustomersList,
   getListVehiclesCustomer,
   getDetail,
+  updateVehiclesCustomer,
 } = require("../controllers/vehiclesCustomerController");
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
@@ -26,5 +27,8 @@ router.get("/:id/customer", verifyToken, getListVehiclesCustomer);
 
 // get detail
 router.get("/:id", verifyToken, getDetail);
+
+// update
+router.put("/:id", verifyToken, updateVehiclesCustomer);
 
 module.exports = router;
