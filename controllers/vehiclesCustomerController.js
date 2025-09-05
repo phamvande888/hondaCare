@@ -158,7 +158,7 @@ const updateVehiclesCustomer = async (req, res) => {
       return res.status(404).json({ message: "Vehicle not found" });
     }
 
-    // check licensePlate unique (trừ chính nó)
+    // check licensePlate unique
     const existingVehicle = await VehiclesCustomer.findOne({
       licensePlate: licensePlate.trim(),
       _id: { $ne: id },
