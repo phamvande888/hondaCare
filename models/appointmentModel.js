@@ -37,6 +37,16 @@ const appointmentSchema = new mongoose.Schema(
       ref: "Branch", // chi nhánh thực hiện dịch vụ
       default: null,
     },
+    created_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // người tạo đơn (có thể là admin)
+      required: true,
+    },
+     created_type: {
+      type: String,
+      enum: ["Admin", "Customer"],
+      required: true,
+    },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } } // thêm thời gian tạo & cập nhật
 );
