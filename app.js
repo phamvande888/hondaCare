@@ -12,6 +12,7 @@ const serviceRoutes = require("./routes/serviceSystemRoutes");
 const vehicleSystemRoutes = require("./routes/vehiclesSystemRoutes");
 const modelRoutes = require("./routes/modelRoutes"); // Import model routes
 const vehicleCustomersRoutes = require("./routes/vehiclesCustomerRoutes"); // Import model routes
+const appointmentRoutes = require("./routes/appointmentRoutes"); // Import appointment routes
 
 // Connect MongoDB Atlas
 mongoose
@@ -34,6 +35,7 @@ app.use("/api/services", serviceRoutes); // routes for user authentication
 app.use("/api/vehicle-systems", vehicleSystemRoutes); // routes for vehicle management
 app.use("/api/models", modelRoutes); // routes for vehicle management
 app.use("/api/vehicle-customers", vehicleCustomersRoutes); // routes for vehicle of customer management
+app.use("/api/appoinment", appointmentRoutes); // routes for appointment management
 
 // Start server
 const PORT = process.env.PORT || 5000;

@@ -5,22 +5,22 @@ const appointmentSchema = new mongoose.Schema(
     customer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true, // người đặt lịch là bắt buộc
+      required: true, 
     },
     service_id: 
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "ServiceSystem", // tham chiếu đến bảng dịch vụ hệ thống
+        ref: "ServiceSystem", 
         required: true,
       },
     dateTime: {
       type: Date,
-      required: true, // thời gian đặt lịch
+      required: true, 
     },
     status: {
       type: String,
-      enum: ["pending", "approved", "progress", "completed", "cancelled"],
-      default: "pending",
+      enum: ["Pending", "Approved", "Progress", "Completed", "Cancelled"],
+      default: "Pending",
     },
     customer_note: {
       type: String,
@@ -34,17 +34,12 @@ const appointmentSchema = new mongoose.Schema(
     },
     branch_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Branch", // chi nhánh thực hiện dịch vụ
-      default: null,
+      ref: "Branch", 
+      required: true
     },
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // người tạo đơn (có thể là admin)
-      required: true,
-    },
-     created_type: {
-      type: String,
-      enum: ["Admin", "Customer"],
+      ref: "User", 
       required: true,
     },
   },
