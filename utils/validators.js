@@ -20,8 +20,23 @@ const checkMissingFields = (body, requiredFields) => {
   );
 };
 
+const parseNumberInput = (val) => {
+  if (val === undefined || val === null) return val;
+  let s = String(val).trim();
+  if (s === "") return NaN;
+  // If both '.' and ',' exist assume '.' are thousands separators and ',' is decimal
+  if (s.includes(".") && s.includes(",")) {
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else {
+    // replace comma decimal with dot, remove spaces
+    s = s.replace(",", ".").replace(/\s+/g, "");
+  }
+  return Number(s);
+};
+
 module.exports = {
   isValidEmail,
   isValidVietnamesePhoneNumber,
   checkMissingFields,
+  parseNumberInput
 };

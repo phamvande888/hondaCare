@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { adminCreateAppointment ,customerCreateAppointment,updateAppointment,
-    getAppointmentDetail,getAppointmentByCustomerId,getAllAppointments} = require("../controllers/appointmentController");
+const { adminCreateAppointment, customerCreateAppointment, updateAppointment,
+    getAppointmentDetail, getAppointmentByCustomerId, getAllAppointments } = require("../controllers/appointmentController");
 const verifyToken = require("../middleware/verifyToken"); // Import token verification middleware
 const checkrole = require("../middleware/checkRole"); // Import role checking middleware
 
