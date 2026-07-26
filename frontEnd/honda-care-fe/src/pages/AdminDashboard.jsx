@@ -43,6 +43,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [actionId, setActionId] = useState(null);
 
   const user = useMemo(() => {
     try {
@@ -64,8 +65,7 @@ export default function AdminDashboard() {
         adminApi.getServices(),
       ]);
       if (!active) return;
-      const [appointmentResult, customerResult, branchResult, serviceResult] =
-        results;
+      const [appointmentResult, customerResult, branchResult, serviceResult] = results;
       if (appointmentResult.status === "fulfilled") {
         setAppointments(appointmentResult.value.appointments || []);
       }
@@ -92,8 +92,7 @@ export default function AdminDashboard() {
   const filteredAppointments = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     return appointments.filter((appointment) => {
-      const matchesStatus =
-        statusFilter === "All" || appointment.status === statusFilter;
+      const matchesStatus = statusFilter === "All" || appointment.status === statusFilter;
       const searchable = [
         appointment.customer_id?.fullName,
         appointment.customer_id?.phoneNumber,
@@ -125,12 +124,48 @@ export default function AdminDashboard() {
       );
     } catch (requestError) {
       setError(
-        requestError?.message ||
-          requestError?.error ||
-          "Không thể cập nhật trạng thái lịch hẹn."
+        requestError?.message || requestError?.error || "Không thể cập nhật trạng thái lịch hẹn."
       );
     } finally {
       setUpdatingId(null);
+    }
+  }
+
+  async function toggleCustomer(customer) {
+    setActionId(customer._id);
+    setError("");
+    try {
+      const response = await adminApi.toggleCustomerStatus(customer._id);
+      setCustomers((current) =>
+        current.map((item) =>
+          item._id === customer._id ? { ...item, isActive: response.isActive_now } : item
+        )
+      );
+    } catch (requestError) {
+      setError(
+        requestError?.message || requestError?.error || "Khong the cap nhat trang thai khach hang."
+      );
+    } finally {
+      setActionId(null);
+    }
+  }
+
+  async function toggleBranch(branch) {
+    setActionId(branch._id);
+    setError("");
+    try {
+      const response = await adminApi.toggleBranchStatus(branch._id);
+      setBranches((current) =>
+        current.map((item) =>
+          item._id === branch._id ? { ...item, isActive: response.isActive_now } : item
+        )
+      );
+    } catch (requestError) {
+      setError(
+        requestError?.message || requestError?.error || "Khong the cap nhat trang thai chi nhanh."
+      );
+    } finally {
+      setActionId(null);
     }
   }
 
@@ -227,9 +262,7 @@ export default function AdminDashboard() {
                       <span>ƯU TIÊN HÔM NAY</span>
                       <h2>Lịch hẹn cần xử lý</h2>
                     </div>
-                    <button onClick={() => setSection("appointments")}>
-                      Xem tất cả
-                    </button>
+                    <button onClick={() => setSection("appointments")}>Xem tất cả</button>
                   </div>
                   <AppointmentTable
                     appointments={appointments
@@ -293,9 +326,17 @@ export default function AdminDashboard() {
                         <p>{customer.phoneNumber}</p>
                         <small>{customer.address || "Chưa cập nhật địa chỉ"}</small>
                       </div>
-                      <i className={customer.isActive === false ? "is-off" : ""}>
-                        {customer.isActive === false ? "Tạm khóa" : "Hoạt động"}
-                      </i>
+                      <button
+                        className={`admin-state-action ${customer.isActive === false ? "is-off" : ""}`}
+                        disabled={actionId === customer._id}
+                        onClick={() => toggleCustomer(customer)}
+                      >
+                        {actionId === customer._id
+                          ? "Dang luu..."
+                          : customer.isActive === false
+                            ? "Mo khoa"
+                            : "Khoa"}
+                      </button>
                     </article>
                   ))}
                 </div>
@@ -318,7 +359,17 @@ export default function AdminDashboard() {
                           <strong>{branch.name}</strong>
                           <p>{branch.address}</p>
                         </div>
-                        <span>{branch.isActive === false ? "Tạm dừng" : "Đang mở"}</span>
+                        <button
+                          className={`admin-state-action ${branch.isActive === false ? "is-off" : ""}`}
+                          disabled={actionId === branch._id}
+                          onClick={() => toggleBranch(branch)}
+                        >
+                          {actionId === branch._id
+                            ? "Dang luu..."
+                            : branch.isActive === false
+                              ? "Mo lai"
+                              : "Tam dung"}
+                        </button>
                       </article>
                     ))}
                   </div>
@@ -382,9 +433,7 @@ function AppointmentTable({ appointments, updatingId, onStatusChange }) {
                   className={`admin-status admin-status--${appointment.status.toLowerCase()}`}
                   value={appointment.status}
                   disabled={updatingId === appointment._id}
-                  onChange={(event) =>
-                    onStatusChange(appointment._id, event.target.value)
-                  }
+                  onChange={(event) => onStatusChange(appointment._id, event.target.value)}
                 >
                   {statusOptions.map((status) => (
                     <option key={status} value={status}>

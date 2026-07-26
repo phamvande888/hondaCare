@@ -14,9 +14,9 @@ const checkrole = require("../middleware/checkRole"); // Import role checking mi
 // create new branch
 router.post(
   "/create-branch",
-  upload.array("images", 5),
   verifyToken,
-  checkrole("Administrator"), // Only allow Administrator  create a branch
+  checkrole(["Administrator"]),
+  upload.array("images", 5), // Only allow Administrator  create a branch
   createBranch
 );
 
@@ -30,7 +30,7 @@ router.get("/get-branch/:id", verifyToken, getBranchById);
 router.put(
   "/update-branch/:id",
   verifyToken,
-  checkrole("Administrator", "Branch Manager"),
+  checkrole(["Administrator", "Branch Manager"]),
   upload.array("images", 5),
   updateBranch
 );
@@ -39,7 +39,7 @@ router.put(
 router.patch(
   "/changestatus-branch/:id",
   verifyToken,
-  checkrole("Administrator", "Branch Manager"),
+  checkrole(["Administrator", "Branch Manager"]),
   changeStatus
 );
 
