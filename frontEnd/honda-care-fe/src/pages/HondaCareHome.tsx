@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { appointmentApi, catalogApi, type Branch, type Service } from "../api/api";
+import { appointmentApi, catalogApi, type Branch, type Service, type Appointment } from "../api/api";
 import { authApi } from "../api/authApi";
 import "./HondaCareHome.css";
 import { toast } from "react-toastify";
@@ -158,6 +158,11 @@ export default function HondaCareHome() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [bookingError, setBookingError] = useState("");
+  const [appointmentsOpen, setAppointmentsOpen] = useState(false);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+  const [appointmentsError, setAppointmentsError] = useState("");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -282,6 +287,28 @@ export default function HondaCareHome() {
     toast.info("Đã đăng xuất");
   }
 
+  async function openAppointments() {
+    setProfileOpen(false); setAppointmentsOpen(true); setAppointmentsError(""); setAppointmentsLoading(true);
+    try {
+      const customerId = authUser?.id || authUser?._id;
+      if (!customerId) throw new Error("Khong tim thay thong tin tai khoan");
+      setAppointments(await appointmentApi.getMine(customerId));
+    } catch (error: any) {
+      setAppointmentsError(error?.message || error?.error || "Khong tai duoc lich hen");
+    } finally { setAppointmentsLoading(false); }
+  }
+
+  async function cancelAppointment(appointmentId: string) {
+    setCancellingId(appointmentId); setAppointmentsError("");
+    try {
+      await appointmentApi.cancel(appointmentId);
+      setAppointments((current) => current.map((item) => item._id === appointmentId ? { ...item, status: "Cancelled" } : item));
+      toast.success("Da huy lich hen");
+    } catch (error: any) {
+      setAppointmentsError(error?.message || error?.error || "Khong the huy lich hen");
+    } finally { setCancellingId(null); }
+  }
+
   const submitRegister = async (e: FormEvent) => {
     e.preventDefault();
     setAuthError("");
@@ -376,12 +403,12 @@ export default function HondaCareHome() {
                 onClick={() => setProfileOpen((s) => !s)}
                 aria-expanded={profileOpen}
               >
-                <span className="avatar">{(authUser.name || authUser.phoneNumber || "").slice(0,2).toUpperCase()}</span>
+                <span className="avatar">{(authUser.fullName || authUser.name || authUser.phoneNumber || "").slice(0,2).toUpperCase()}</span>
               </button>
               {profileOpen && (
                 <div className="profile-dropdown" style={{position:'absolute', right:0, marginTop:8, background:'#fff', boxShadow:'0 6px 18px rgba(0,0,0,0.08)', borderRadius:8, padding:8}}>
-                  <div className="p-2">{authUser.name || authUser.phoneNumber}</div>
-                  <button className="p-2 text-left w-full" onClick={() => { setProfileOpen(false); /* navigate to profile if exists */ }}>Trang cá nhân</button>
+                  <div className="p-2">{authUser.fullName || authUser.name || authUser.phoneNumber}</div>
+                  <button className="p-2 text-left w-full" onClick={openAppointments}>Lich hen cua toi</button>
                   <button className="p-2 text-left w-full" onClick={() => { setProfileOpen(false); logout(); }}>Đăng xuất</button>
                 </div>
               )}
@@ -523,6 +550,25 @@ export default function HondaCareHome() {
                 </form>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {appointmentsOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAppointmentsOpen(false); }}>
+          <div className="booking-modal appointments-modal" role="dialog" aria-modal="true" aria-labelledby="appointments-title">
+            <button className="modal-close" type="button" aria-label="Dong" onClick={() => setAppointmentsOpen(false)}><Icon name="close" /></button>
+            <span className="section-label">TAI KHOAN CUA TOI</span><h2 id="appointments-title">Lich hen cua toi</h2>
+            <p className="modal-intro">Theo doi trang thai cac lich bao duong da dat.</p>
+            {appointmentsLoading && <p className="appointments-state">Dang tai lich hen...</p>}
+            {appointmentsError && <p className="form-error">{appointmentsError}</p>}
+            {!appointmentsLoading && !appointmentsError && appointments.length === 0 && <div className="appointments-empty"><Icon name="calendar" /><p>Ban chua co lich hen nao.</p><button className="button button-primary" type="button" onClick={() => { setAppointmentsOpen(false); openBooking(); }}>Dat lich ngay</button></div>}
+            <div className="appointments-list">{appointments.map((appointment) => <article className="appointment-card" key={appointment._id}>
+              <div className="appointment-card__header"><strong>{appointment.service_id?.name || "Dich vu HondaCare"}</strong><span className={`appointment-status status-${appointment.status.toLowerCase()}`}>{appointment.status}</span></div>
+              <p><b>Thoi gian:</b> {new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(appointment.dateTime))}</p>
+              <p><b>Chi nhanh:</b> {appointment.branch_id?.name || "Dang cap nhat"}</p>{appointment.branch_id?.address && <p>{appointment.branch_id.address}</p>}{appointment.customer_note && <p><b>Ghi chu:</b> {appointment.customer_note}</p>}
+              {appointment.status === "Pending" && <button className="appointment-cancel" type="button" disabled={cancellingId === appointment._id} onClick={() => cancelAppointment(appointment._id)}>{cancellingId === appointment._id ? "Dang huy..." : "Huy lich"}</button>}
+            </article>)}</div>
           </div>
         </div>
       )}

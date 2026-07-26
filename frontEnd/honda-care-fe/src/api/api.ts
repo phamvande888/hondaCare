@@ -13,6 +13,14 @@ export type AppointmentPayload = {
   dateTime: string;
   customer_note?: string;
 };
+export type Appointment = {
+  _id: string;
+  dateTime: string;
+  status: "Pending" | "Approved" | "Progress" | "Completed" | "Cancelled";
+  customer_note?: string | null;
+  service_id?: { _id: string; name: string; price?: number };
+  branch_id?: { _id: string; name: string; address?: string };
+};
 
 export const catalogApi = {
   async getBranches(): Promise<Branch[]> {
@@ -28,8 +36,10 @@ export const catalogApi = {
 export const appointmentApi = {
   create: (payload: AppointmentPayload) =>
     axiosClient.post("/api/appointments/customer", payload),
-  async getMine(customerId: string) {
+  async getMine(customerId: string): Promise<Appointment[]> {
     const response: any = await axiosClient.get(`/api/appointments/list/${customerId}`);
     return response.appointments || [];
   },
+  cancel: (appointmentId: string) =>
+    axiosClient.patch(`/api/appointments/${appointmentId}`, { status: "Cancelled" }),
 };

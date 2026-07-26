@@ -1757,3 +1757,18 @@ svg {
     transition-duration: 0.01ms !important;
   }
 }
+/* Customer appointment history */
+.appointments-modal { width: min(680px, 100%); max-height: min(760px, calc(100vh - 48px)); overflow-y: auto; }
+.appointments-list { display: grid; gap: 14px; margin-top: 20px; }
+.appointment-card { padding: 18px; border: 1px solid rgba(18, 52, 86, 0.12); border-radius: 14px; background: #f8fafc; }
+.appointment-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.appointment-card p { margin: 6px 0; color: #52606d; }
+.appointment-status { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; background: #e8eef5; color: #30465c; font-size: .75rem; font-weight: 700; }
+.status-pending { background: #fff4cc; color: #805b00; }
+.status-approved, .status-progress { background: #dceeff; color: #075985; }
+.status-completed { background: #dcfce7; color: #166534; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
+.appointment-cancel { margin-top: 12px; border: 0; background: transparent; color: #b42318; font: inherit; font-weight: 700; cursor: pointer; }
+.appointment-cancel:disabled { cursor: wait; opacity: .55; }
+.appointments-state, .appointments-empty { padding: 28px 12px; text-align: center; color: #52606d; }
+.appointments-empty svg { width: 42px; margin: 0 auto 12px; color: var(--red); }

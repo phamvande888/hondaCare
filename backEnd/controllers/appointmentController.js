@@ -205,7 +205,8 @@ const getAppointmentByCustomerId = async (req, res) => {
       .populate("customer_id", "fullName phoneNumber email gender address images") // thông tin cơ bản của khách
       .populate("created_by", "fullName role phoneNumber images")  // thông tin cơ bản của người tạo
       .populate("service_id", "name price estimatedTime images category")  // thông tin cơ bản của người tạo
-      .populate("branch_id", "name address phoneNumber images email images");  // thông tin cơ bản của người tạo
+      .populate("branch_id", "name address phoneNumber images email images")
+      .sort({ dateTime: -1 });  // thông tin cơ bản của người tạo
 
     if (!appointment) {
       return res.status(404).json({ error: "Appointment not found" });
@@ -225,7 +226,8 @@ const getAllAppointments = async (req, res) => {
       .populate("customer_id", "fullName phoneNumber email gender address images") // thông tin cơ bản của khách
       .populate("created_by", "fullName role phoneNumber images")  // thông tin cơ bản của người tạo
       .populate("service_id", "name price estimatedTime images category")  // thông tin cơ bản của người tạo
-      .populate("branch_id", "name address phoneNumber images email images");  // thông tin cơ bản của người tạo
+      .populate("branch_id", "name address phoneNumber images email images")
+      .sort({ dateTime: -1 });  // thông tin cơ bản của người tạo
 
     if (!appointment) {
       return res.status(404).json({ error: "Appointment not found" });
