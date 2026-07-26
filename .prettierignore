@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+coverage
+.expo
+.git-history-backup
+backEnd/uploads
+package-lock.json
