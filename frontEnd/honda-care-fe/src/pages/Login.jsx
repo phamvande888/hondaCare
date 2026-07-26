@@ -42,12 +42,18 @@ const Login = () => {
       const res = await authApi.login(form);
 
       // giả định API trả về accessToken
-      localStorage.setItem("accessToken", res.accessToken);
-      const user = res.user || { phoneNumber: form.phoneNumber };
+      localStorage.setItem("accessToken", res.token);
+      const user = res.user || {
+        id: res.userId,
+        fullName: res.fullName,
+        phoneNumber: res.phoneNumber,
+        role: res.role,
+      };
       localStorage.setItem("authUser", JSON.stringify(user));
       toast.success("Đăng nhập thành công");
 
-      navigate("/dashboard");
+      const adminRoles = ["Administrator", "Branch Manager", "Service Receptionist"];
+      navigate(adminRoles.includes(user.role) ? "/dashboard" : "/home");
     } catch (err) {
       setError(err.message || "Login thất bại");
       toast.error(err.message || "Login thất bại");
