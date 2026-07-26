@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { appointmentApi, catalogApi, type Branch, type Service, type Appointment } from "../api/api";
 import { authApi } from "../api/authApi";
+import { vehicleApi, type CustomerVehicle, type VehicleSystem } from "../api/vehicleApi";
 import "./HondaCareHome.css";
 import { toast } from "react-toastify";
 
@@ -164,6 +165,12 @@ export default function HondaCareHome() {
   const [appointmentsError, setAppointmentsError] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [vehiclesOpen, setVehiclesOpen] = useState(false);
+  const [myVehicles, setMyVehicles] = useState<CustomerVehicle[]>([]);
+  const [vehicleSystems, setVehicleSystems] = useState<VehicleSystem[]>([]);
+  const [vehiclesLoading, setVehiclesLoading] = useState(false);
+  const [vehicleSaving, setVehicleSaving] = useState(false);
+  const [vehicleError, setVehicleError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
@@ -309,6 +316,30 @@ export default function HondaCareHome() {
     } finally { setCancellingId(null); }
   }
 
+  async function openVehicles() {
+    setProfileOpen(false); setVehiclesOpen(true); setVehicleError(""); setVehiclesLoading(true);
+    try {
+      const [mine, systems] = await Promise.all([vehicleApi.getMine(), vehicleApi.getSystems()]);
+      setMyVehicles(mine); setVehicleSystems(systems);
+    } catch (error: any) {
+      setVehicleError(error?.message || error?.error || "Khong tai duoc danh sach xe");
+    } finally { setVehiclesLoading(false); }
+  }
+
+  async function submitVehicle(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setVehicleSaving(true); setVehicleError("");
+    const form = event.currentTarget; const data = new FormData(form);
+    try {
+      const vehicle = await vehicleApi.createMine({
+        licensePlate: String(data.get("licensePlate")), VehiclesSystemId: String(data.get("VehiclesSystemId")),
+        color: String(data.get("color")), mileage: Number(data.get("mileage") || 0),
+      });
+      setMyVehicles((current) => [vehicle, ...current]); form.reset(); toast.success("Da them xe");
+    } catch (error: any) {
+      setVehicleError(error?.message || error?.error || "Khong the them xe");
+    } finally { setVehicleSaving(false); }
+  }
+
   const submitRegister = async (e: FormEvent) => {
     e.preventDefault();
     setAuthError("");
@@ -409,6 +440,7 @@ export default function HondaCareHome() {
                 <div className="profile-dropdown" style={{position:'absolute', right:0, marginTop:8, background:'#fff', boxShadow:'0 6px 18px rgba(0,0,0,0.08)', borderRadius:8, padding:8}}>
                   <div className="p-2">{authUser.fullName || authUser.name || authUser.phoneNumber}</div>
                   <button className="p-2 text-left w-full" onClick={openAppointments}>Lich hen cua toi</button>
+                  <button className="p-2 text-left w-full" onClick={openVehicles}>Xe cua toi</button>
                   <button className="p-2 text-left w-full" onClick={() => { setProfileOpen(false); logout(); }}>Đăng xuất</button>
                 </div>
               )}
@@ -569,6 +601,30 @@ export default function HondaCareHome() {
               <p><b>Chi nhanh:</b> {appointment.branch_id?.name || "Dang cap nhat"}</p>{appointment.branch_id?.address && <p>{appointment.branch_id.address}</p>}{appointment.customer_note && <p><b>Ghi chu:</b> {appointment.customer_note}</p>}
               {appointment.status === "Pending" && <button className="appointment-cancel" type="button" disabled={cancellingId === appointment._id} onClick={() => cancelAppointment(appointment._id)}>{cancellingId === appointment._id ? "Dang huy..." : "Huy lich"}</button>}
             </article>)}</div>
+          </div>
+        </div>
+      )}
+
+      {vehiclesOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setVehiclesOpen(false); }}>
+          <div className="booking-modal vehicles-modal" role="dialog" aria-modal="true" aria-labelledby="vehicles-title">
+            <button className="modal-close" type="button" aria-label="Dong" onClick={() => setVehiclesOpen(false)}><Icon name="close" /></button>
+            <span className="section-label">TAI KHOAN CUA TOI</span><h2 id="vehicles-title">Xe cua toi</h2>
+            {vehiclesLoading && <p className="appointments-state">Dang tai danh sach xe...</p>}
+            {vehicleError && <p className="form-error">{vehicleError}</p>}
+            <div className="vehicle-list">{myVehicles.map((vehicle) => <article className="vehicle-card" key={vehicle._id}>
+              <div><strong>{vehicle.VehiclesSystemId?.name || "Honda"}</strong><span>{vehicle.VehiclesSystemId?.model?.name || ""} {vehicle.VehiclesSystemId?.year || ""}</span></div>
+              <b>{vehicle.licensePlate}</b><p>Mau: {vehicle.color} - {vehicle.mileage.toLocaleString("vi-VN")} km</p>
+            </article>)}</div>
+            {!vehiclesLoading && myVehicles.length === 0 && <p className="appointments-state">Ban chua them xe nao.</p>}
+            <form className="booking-form vehicle-form" onSubmit={submitVehicle}>
+              <h3>Them xe</h3>
+              <label>Dong xe<select name="VehiclesSystemId" defaultValue="" required><option value="" disabled>Chon dong xe</option>{vehicleSystems.map((item) => <option key={item._id} value={item._id}>{item.name} {item.model?.name || ""} {item.year || ""}</option>)}</select></label>
+              <label>Bien so xe<input name="licensePlate" required placeholder="59A1-12345" /></label>
+              <label>Mau xe<input name="color" required placeholder="Do, den, trang..." /></label>
+              <label>So km da di<input name="mileage" type="number" min="0" defaultValue="0" required /></label>
+              <button className="button button-primary submit-button" type="submit" disabled={vehicleSaving}>{vehicleSaving ? "Dang luu..." : "Them xe"}</button>
+            </form>
           </div>
         </div>
       )}

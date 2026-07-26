@@ -1772,3 +1772,14 @@ svg {
 .appointment-cancel:disabled { cursor: wait; opacity: .55; }
 .appointments-state, .appointments-empty { padding: 28px 12px; text-align: center; color: #52606d; }
 .appointments-empty svg { width: 42px; margin: 0 auto 12px; color: var(--red); }
+
+/* Customer vehicles */
+.vehicles-modal { width: min(720px, 100%); max-height: min(820px, calc(100vh - 48px)); overflow-y: auto; }
+.vehicle-list { display: grid; gap: 12px; margin: 20px 0; }
+.vehicle-card { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; padding: 16px; border: 1px solid rgba(18, 52, 86, .12); border-radius: 14px; background: #f8fafc; }
+.vehicle-card div { display: flex; flex-direction: column; gap: 3px; }
+.vehicle-card div span, .vehicle-card p { color: #52606d; }
+.vehicle-card p { grid-column: 1 / -1; margin: 0; }
+.vehicle-card > b { color: var(--red); letter-spacing: .04em; }
+.vehicle-form { margin-top: 22px; padding-top: 20px; border-top: 1px solid rgba(18, 52, 86, .12); }
+.vehicle-form h3 { margin: 0 0 4px; }

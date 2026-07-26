@@ -47,10 +47,10 @@ router.patch(
 // List vehicle systems
 router.get("/", getAll);
 
-// Get vehicle system by ID (detail)
-router.get("/:id", getById);
-
 // Get by model
 router.get("/model/:modelId", getByModel);
+
+// Get vehicle system by ID (detail)
+router.get("/:id", getById);
 
 module.exports = router;
