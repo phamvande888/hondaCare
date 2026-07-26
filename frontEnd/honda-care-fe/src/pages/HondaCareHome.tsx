@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { appointmentApi, catalogApi, type Branch, type Service, type Appointment } from "../api/api";
 import { authApi } from "../api/authApi";
 import { vehicleApi, type CustomerVehicle, type VehicleSystem } from "../api/vehicleApi";
+// @ts-ignore: Importing CSS for side effects without type declarations.
 import "./HondaCareHome.css";
 import { toast } from "react-toastify";
 
@@ -186,7 +187,7 @@ export default function HondaCareHome() {
     setBookingError("");
     if (!localStorage.getItem("accessToken")) {
       openAuth("login");
-      toast.info("Vui lòng dang nh?p d? d?t l?ch");
+      toast.info("Vui lï¿½ng dang nh?p d? d?t l?ch");
       return;
     }
     setBookingOpen(true);
@@ -198,7 +199,7 @@ export default function HondaCareHome() {
       setBranches(branchList);
       setServices(serviceList);
     } catch (error: any) {
-      setBookingError(error?.message || error?.error || "Không t?i du?c d? li?u d?t l?ch");
+      setBookingError(error?.message || error?.error || "Khï¿½ng t?i du?c d? li?u d?t l?ch");
     }
   };
 
@@ -393,7 +394,7 @@ export default function HondaCareHome() {
       });
       setSubmitState("success");
     } catch (error: any) {
-      setBookingError(error?.message || error?.error || "Chua th? g?i yêu c?u");
+      setBookingError(error?.message || error?.error || "Chua th? g?i yï¿½u c?u");
       setSubmitState("error");
     }
   }
@@ -1086,21 +1087,21 @@ export default function HondaCareHome() {
                     </select>
                   </label>
                   <label>
-                    Chi nhánh
+                    Chi nhï¿½nh
                     <select name="branch_id" defaultValue="" required>
-                      <option value="" disabled>Ch?n chi nhánh</option>
+                      <option value="" disabled>Ch?n chi nhï¿½nh</option>
                       {branches.map((branch) => (
                         <option key={branch._id} value={branch._id}>{branch.name}</option>
                       ))}
                     </select>
                   </label>
                   <label>
-                    Ngày và gi? mong mu?n
+                    Ngï¿½y vï¿½ gi? mong mu?n
                     <input name="dateTime" type="datetime-local" min={new Date().toISOString().slice(0, 16)} required />
                   </label>
                   <label>
-                    Ghi chú
-                    <input name="customer_note" type="text" placeholder="Nhu c?u ho?c tình tr?ng xe (không b?t bu?c)" />
+                    Ghi chï¿½
+                    <input name="customer_note" type="text" placeholder="Nhu c?u ho?c tï¿½nh tr?ng xe (khï¿½ng b?t bu?c)" />
                   </label>
 
                   {bookingError && <p className="form-error">{bookingError}</p>}
